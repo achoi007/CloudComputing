@@ -32,51 +32,11 @@ class LamportTimestamp(object):
         self.events = 0
         self.marks = {}
 
-if __name__ == '__main__':
+    def reportTS(self, proc=None):
+        if proc == None:
+            return self.ts
+        else:
+            return "ts[%d]=%d" % (proc, self.ts[proc])
 
-    numProc = int(raw_input("Number of processes:"))
-    lt = LamportTimestamp(numProc)
 
-    def reportTS(proc):
-        print "Updated ts[", proc, "]: ", lt.ts[proc]
-    
-    while True:
-        try:
-            # Read input
-            input = raw_input("(c)lear, (s)tep, (m)esg, (t)imstamp, (e)vents, (h)alf send, half (r)eceive, (q)uit: ")
-            args = input.split()
-            cmd = input[0]
-            # Process commands
-            if cmd == 'c':
-                lt.clear()
-                print "Cleared"
-            elif cmd == 's':
-                proc = int(args[1])
-                lt.addStep(proc)
-                reportTS(proc)
-            elif cmd == 'm':
-                fromProc = int(args[1])
-                toProc = int(args[2])
-                lt.sendMesg(fromProc, toProc)
-                reportTS(fromProc)
-                reportTS(toProc)                
-            elif cmd == 't':
-                print "Timestamps:", lt.ts
-            elif cmd == 'e':
-                print "Num of events:", lt.events
-            elif cmd == 'q':
-                break
-            elif cmd == 'h':
-                proc = int(args[1])
-                mark = args[2]
-                lt.halfSend(proc, mark)
-                reportTS(proc)
-            elif cmd == 'r':
-                proc = int(args[1])
-                mark = args[2]
-                lt.halfRecv(proc, mark)
-                reportTS(proc)
-        except:
-            print "Ignoring error"
-            
     
