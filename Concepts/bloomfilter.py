@@ -34,6 +34,8 @@ if __name__ == '__main__':
 
     while True:
         input = raw_input("[r]eset, [g]et bits set, [i]nsert, [c]ontains:")
+        if len(input) == 0:
+            continue
         cmd = input[0]
         if cmd == 'r':
             bf = BloomFilter(32, hashes)
