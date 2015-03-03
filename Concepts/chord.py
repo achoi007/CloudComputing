@@ -1,4 +1,5 @@
 import unittest
+import bisect
 
 class Chord(object):
 
@@ -31,29 +32,65 @@ class Chord(object):
                 return p
         return self._peers[0]
 
-    def query(self, node, key, node_list = None, is_hash = False):
+    def query(self, node, key, node_list = None):
+        # Hash the key
+        key = self.hash_func(key)
+        # Find node which has the key
+        pos = bisect.bisect(self._peers, key)
+        if pos < len(self._peers):
+            key_at_node = self._peers[pos]
+        else:
+            key_at_node = self._peers[0]
+        # See if path to find node is needed.  If so, compute it
+        if node_list != None:
+            self._compute_search_path(node, key_at_node, node_list)
+        return key_at_node
+
+    def _compute_search_path(self, start_node, final_node, node_list):
+        # If start node is final node, done
+        if final_node == start_node:
+            node_list.append(start_node)
+            return
+        finger_tbl = self._finger_tbl[start_node]
+        fingers = filter(lambda i: i <= final_node, finger_tbl)
+        if len(fingers) > 0:
+            new_start_node = max(fingers)
+        else:
+            new_start_node = finger_tbl[-1]
+        node_list.append(start_node)
+        self._compute_search_path(new_start_node, final_node, node_list)
+
+    def _query_helper(self, node, key, node_list):
         '''
         At node n, query for key.
         Find largest successor/finger entry <= k.  If none exists, send query to successor(n)
         '''
-        if not is_hash:
-            key = self.hash_func(key)
-        finger_tbl = self._finger_tbl[node]
-        found = None
-        for pos in reversed(range(len(finger_tbl))):
-            entry = finger_tbl[pos]
-            if entry <= key:
-                found = entry
-                break
-        if found is None:
-            s = self.successor(node)
-            if node_list != None:
-                node_list.append(s)
-            return s
+        # Done if node has key
+        if self.contains(node, key):
+            return node
+        # Find largest finger entry <= key
+        fingers = [f for f in self._finger_tbl[node] if f <= key]
+        # If none exists, send query to successor
+        if len(fingers) == 0:
+            next_node = self.successor(node)
+        # otherwise, send query to largest finger entry <= key
         else:
-            if node_list != None:
-                node_list.append(found)
-            return self.query(found, key, node_list, True)
+            next_node = max(fingers)
+        node_list.append(next_node)
+        return self._query_helper(next_node, key, node_list)
+
+    def contains(self, node, key):
+        if key == node:
+            return True
+        # Find out where key is 
+        pos = bisect.bisect(self._peers, key)
+        # If position is before the last peer, check if next node after position is
+        # current node.
+        if pos < len(self._peers):
+            return self._peers[pos] == node
+        # If position is after the last peer, the first peer is the node which contains key
+        return self._peers[0] == node
+        
 
     def successor(self, node):
         peers = self._peers
@@ -87,7 +124,7 @@ class ChordTest(unittest.TestCase):
         self.assertEquals(45, ch.query(80, 42))
         node_list = []
         ch.query(80, 42, node_list)
-        self.assertEquals([16, 32, 45], node_list)
+        self.assertEquals([80, 16, 32, 45], node_list)
 
 if __name__ == '__main__':
     unittest.main()
