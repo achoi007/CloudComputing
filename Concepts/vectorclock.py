@@ -6,36 +6,24 @@ class VectorClock(object):
         self._numProc = numProc
         self.clear()
 
-    def addStep(self, proc, evtName=None):
+    def addStep(self, proc):
         self._inc(proc)
-        self._recordEvt(evtName, proc)
-        self.events += 1
 
-    def sendMesg(self, fromProc, toProc, evtName=None):
+    def sendMesg(self, fromProc, toProc):
         self._inc(fromProc)
         fromTS = self.ts[fromProc]
         self.ts[toProc] = self._merge(fromTS, toProc)
-        if evtName != None:
-            self._recordEvt(evtName + "From", fromProc)
-            self._recordEvt(evtName + "To", toProc)
-        self.events += 2
 
     def halfSend(self, fromProc, mark):
         self._inc(fromProc)
         self.marks[mark] = list(self.ts[fromProc])
-        self._recordEvt(mark + "From", fromProc)
-        self.events += 1
 
     def halfRecv(self, toProc, mark):
         fromTS = self.marks[mark]
         self.ts[toProc] = self._merge(fromTS, toProc)
-        self._recordEvt(mark + "To", toProc)
-        self.events += 1
 
     def clear(self):
         self.ts = [[0] * self._numProc for i in xrange(self._numProc)]
-        self.events = 0
-        self.eventTS = {}        
         self.marks = {}
 
     def reportTS(self, proc=None):
@@ -55,10 +43,6 @@ class VectorClock(object):
         toTS = [max(fromTS[i], toTS[i]) for i in xrange(len(fromTS))]
         toTS[toProc] = vp
         return toTS
-
-    def _recordEvt(self, evtName, proc):
-        if evtName != None:
-            self.eventTS[evtName] = list(self.ts[proc])
 
     def getTS(self, proc):
         return self.ts[proc]
