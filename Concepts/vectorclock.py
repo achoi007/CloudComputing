@@ -54,6 +54,9 @@ class VectorClock(object):
     def getTS(self, proc):
         return self.ts[proc]
 
+    def getNumProcs(self):
+        return len(self.ts)
+
     @staticmethod
     def lessEq(ts1, ts2):
         return all(ts1[i] <= ts2[i] for i in xrange(len(ts1)))
