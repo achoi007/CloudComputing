@@ -26,11 +26,11 @@ if __name__ == '__main__':
 
     def createHashFunc(i):
         def hash(x):
-            return (x**2 + x**3)*i
+            return (x*i)%64
         return hash
 
-    hashes = [createHashFunc(i) for i in xrange(1, 4)]
-    bf = BloomFilter(32, hashes)
+    hashes = [createHashFunc(i) for i in xrange(1, 3)]
+    bf = BloomFilter(64, hashes)
 
     while True:
         input = raw_input("[r]eset, [g]et bits set, [i]nsert, [c]ontains:")
