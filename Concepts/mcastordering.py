@@ -6,7 +6,7 @@ class MCastOrdering(object):
     def __init__(self, numProcs, deliverCB):
         '''
         numProcs - number of processes
-        deliverCB - deliverCB(fromProc, toProc, msg, timestamp)
+        deliverCB - deliverCB(fromProc, toProc, msg)
         '''
         pass
 
@@ -87,7 +87,47 @@ class FIFOMCastOrdering(BaseMCastOrdering):
         else:
             self._buffer(fromProc, toProc, msg, fromSeqNum)
 
+class MCastOrderingTest(unittest.TestCase):
 
+    def setUp(self):
+        self.msgList = []
+        deliverCB = lambda f,t,m: self.msgList.append((f,t,m))
+        self.fifo = FIFOMCastOrdering(4, deliverCB)
+        self.msgIdx = 0
+
+    def checkMsg(self, fromProc, toProc, msg):
+        self.assertEquals((fromProc, toProc, msg), self.msgList[self.msgIdx])
+        self.msgIdx += 1
+
+    def testFIFO(self):
+        fifo = self.fifo
+        # First mcast
+        fifo.sendMcast(0, "m1")
+        fifo.recvMcast(1, "m1")
+        self.checkMsg(0, 1, "m1")
+        fifo.recvMcast(3, "m1")
+        self.checkMsg(0, 3, "m1")
+        # Second mcast
+        fifo.sendMcast(0, "m2")
+        fifo.recvMcast(2, "m2") # buffered... waiting for m1
+        fifo.recvMcast(2, "m1")
+        self.checkMsg(0, 2, "m1")
+        self.checkMsg(0, 2, "m2")
+        fifo.recvMcast(1, "m2")
+        self.checkMsg(0, 1, "m2")
+        # Third mcast
+        fifo.sendMcast(2, "m3")
+        fifo.recvMcast(3, "m3") # No buffering
+        fifo.recvMcast(3, "m2")
+        self.checkMsg(2, 3, "m3")
+        self.checkMsg(0, 3, "m2")
+        fifo.recvMcast(0, "m3")
+        fifo.recvMcast(1, "m3")
+        self.checkMsg(2, 0, "m3")
+        self.checkMsg(2, 1, "m3")
+
+if __name__ == '__main__':
+    unittest.main()
     
 
 
