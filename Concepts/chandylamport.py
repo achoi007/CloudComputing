@@ -2,6 +2,9 @@ from vectorclock import VectorClock
 import unittest
 
 class ChandyLamport(object):
+    '''
+    Classic Chandy Lamport global state snapshot algorithm
+    '''
 
     def __init__(self, vclock):
         self.vclock = vclock

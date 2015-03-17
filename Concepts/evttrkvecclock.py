@@ -2,6 +2,9 @@ from vectorclock import VectorClock
 import unittest
 
 class EventTrackVectorClock(VectorClock):
+    '''
+    This class adds event count and event time-stamping to vector clock
+    '''
 
     FROM = ".From"
     TO = ".To"

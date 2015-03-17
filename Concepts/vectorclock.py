@@ -1,6 +1,14 @@
 import unittest
 
 class VectorClock(object):
+    '''
+    Classic vector clock implementation:
+    1) addStep updates the timestamp of a process by 1
+    2) sendMesg sends a message between 2 processes.  Send and Recv happen
+        instanteously so there is no interleaving event.
+    3) halfSend is the sending side of a message
+    4) halfRecv is the receiving side of a message
+    '''
 
     def __init__(self, numProc):
         self._numProc = numProc
