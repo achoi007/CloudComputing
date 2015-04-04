@@ -35,16 +35,20 @@ class BaseMCastOrdering(MCastOrdering):
         self.deliverCB(fromProc, toProc, msg)
 
     def _buffer(self, fromProc, toProc, msg, priority):
-        key = (fromProc, toProc)
+        self._bufferKey((fromProc, toProc), msg, priority)
+
+    def _bufferKey(self, key, msg, priority):
         if key not in self.buffer:
             self.buffer[key] = PriorityQueue()
         queue = self.buffer[key]
         queue.put((priority, msg))
 
     def _deliverAllSequential(self, fromProc, toProc, nextPriority):
+        return self._deliverAllSequentialKey((fromProc, toPRoc), nextPriority)
+
+    def _deliverAllSequentialKey(self, key, nextPriority):
         # Deliver all messages in buffer with consecutive priorities starting at
         # nextPriority.  For example, if nextPriority=5, and queue has (5,6,7,10,11), deliver 5,6,7
-        key = (fromProc, toProc)
         if key not in self.buffer:
             return
         queue = self.buffer[key]
@@ -86,6 +90,30 @@ class FIFOMCastOrdering(BaseMCastOrdering):
                 seqNums[fromProc] = lastPriorityDelivered
         else:
             self._buffer(fromProc, toProc, msg, fromSeqNum)
+
+class TotalMCastOrdering(BaseMCastOrdering):
+
+    def __init__(self, numProcs, deliverCB):
+        BaseMCastOrdering.__init__(self, numProcs, deliverCB, None)
+        self.sequencer = 0
+        self.glblSeqNum = 0
+        self.procSeqNum = range(numProcs)
+
+    def recvMcast(self, toProc, msg):
+        if toProc == self.sequencer:
+            self.glblSeqNum += 1
+            self.sendMcast(self.sequencer, (msg, self.glblSeqNum))
+        else:
+            (fromProc, na) = self.msg[msg]
+            if fromProc == self.sequencer:
+                (actMsg, glblSeqNum) = msg
+                if self.procSeqNum[toProc] + 1 == glblSeqNum:
+                    self._deliverAllSequentialKey(toProc, self.procSeqNum[toProc])
+                    self.procSeqNum[toProc] += 1
+                
+                    
+                    
+                        
 
 class MCastOrderingTest(unittest.TestCase):
 
