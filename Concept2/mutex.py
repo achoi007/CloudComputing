@@ -136,6 +136,19 @@ class RicartAgrawalaMutex(MutualExclusion):
         self.replies[receiver].append(sender)
         self._waitForAllReplies(receiver, self.callbacks[receiver])
         
+        
+class MaekawaMutex(MutualExclusion):
+    
+    def __init__(self, processes):
+        pass
+        
+    def enter(self, process, callback):
+        pass
+        
+    def exit(self, process):
+        pass
+        
+        
 class MutualExclusionTest(object):
     
     def createAlgo(self):
@@ -163,8 +176,8 @@ class MutualExclusionTest(object):
     def testSimple(self):
         algo = self.algo
         for p in self.processes:
-            algo.enter(p, lambda : ())
-            algo.exit(p)
+            self.doEnter(p)
+            self.doExit(p)
             
     def testContention(self):
         algo = self.algo
@@ -179,7 +192,8 @@ class MutualExclusionTest(object):
         self.doExit(procs[0])
         # P1 should have entered CS
         self.assertEquals(procs[1], self.cbqueue.pop())
-        
+        # P1 exits
+        self.doExit(procs[1])
         
 
 class CentralMasterMutexTest(unittest.TestCase, MutualExclusionTest):
