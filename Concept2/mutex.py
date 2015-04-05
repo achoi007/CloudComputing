@@ -136,7 +136,7 @@ class RicartAgrawalaMutex(MutualExclusion):
         self.replies[receiver].append(sender)
         self._waitForAllReplies(receiver, self.callbacks[receiver])
         
-        
+                          
 class MutualExclusionTest(object):
     
     def createAlgo(self):

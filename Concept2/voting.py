@@ -13,7 +13,10 @@ class VotingSet:
         return self.voteSets[setNum]
         
     def getProcessCountInSet(self, process):
-        return len(self.getProcessesInSet(self.getVotingSet(process)))
+        return len(self.getProcessesInSameSet(process))
+        
+    def getProcessesInSameSet(self, process):
+        return self.voteSets[self.getVotingSet(process)]
         
     def _split(self, numVotingSets, numSetsPerProcess):
         voteSets = [set() for i in xrange(numVotingSets)]
