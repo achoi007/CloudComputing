@@ -137,18 +137,6 @@ class RicartAgrawalaMutex(MutualExclusion):
         self._waitForAllReplies(receiver, self.callbacks[receiver])
         
         
-class MaekawaMutex(MutualExclusion):
-    
-    def __init__(self, processes):
-        pass
-        
-    def enter(self, process, callback):
-        pass
-        
-    def exit(self, process):
-        pass
-        
-        
 class MutualExclusionTest(object):
     
     def createAlgo(self):
