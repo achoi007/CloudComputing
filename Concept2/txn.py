@@ -171,6 +171,32 @@ class SerialEquivalenceTest(unittest.TestCase):
         self.writeTxn(2, "a")
         txns = self.getTxns()
         self.assertTrue(SerialEquivalence.check(txns))
+        
+    def testExam1(self):
+        self.readTxn(98, "x")
+        self.writeTxn(99, "x")
+        self.writeTxn(99, "y")
+        self.readTxn(99, "y")
+        self.writeTxn(98, "x")
+        self.writeTxn(99, "y")
+        self.writeTxn(98, "y")
+        txns = self.getTxns()
+        self.assertFalse(SerialEquivalence.check(txns))
+        
+    def testExam2(self):
+        self.readTxn(1, "x")
+        self.readTxn(3, "x")
+        self.readTxn(3, "y")
+        self.readTxn(2, "x")
+        self.readTxn(2, "y")
+        self.writeTxn(3, "x")
+        self.readTxn(2, "x")
+        self.readTxn(3, "y")
+        self.readTxn(3, "x")
+        self.readTxn(3, "y")
+        self.writeTxn(1, "y")
+        txns = self.getTxns()
+        self.assertFalse(SerialEquivalence.check(txns))        
     
 if __name__ == '__main__':
     unittest.main()
